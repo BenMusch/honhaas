@@ -369,6 +369,7 @@ def create_bottleneck_file(bottleneck_path, image_lists, label_name, index,
                               image_dir, category)
   if not gfile.Exists(image_path):
     tf.logging.fatal('File does not exist %s', image_path)
+    return
   image_data = gfile.FastGFile(image_path, 'rb').read()
   try:
     bottleneck_values = run_bottleneck_on_image(
