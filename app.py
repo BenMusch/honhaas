@@ -1,12 +1,16 @@
 import os
 import time
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
 
 from download_images import download_image
 from label_image import get_predictions
 
 app = Flask(__name__)
+
+@app.route('/', methods=['GET'])
+def index():
+    return redirect('https://github.com/BenMusch/honhaas#hotdog-or-not-hotdog-as-as-service')
 
 @app.route('/is_hotdog', methods=['POST'])
 def is_hotdog():
