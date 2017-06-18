@@ -1,3 +1,4 @@
 *.pyc
 images/*
 .DS_STORE
+tmp/*
