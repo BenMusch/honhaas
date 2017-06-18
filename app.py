@@ -21,6 +21,7 @@ def is_hotdog():
         try:
             predictions = get_predictions(image_location)
             is_hotdog = make_prediction(predictions)
+            os.remove(image_location)
             return jsonify(is_hotdog=is_hotdog, scores=predictions)
         except Exception as e:
             print(str(e))
