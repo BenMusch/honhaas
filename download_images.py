@@ -50,9 +50,11 @@ def download_image(image_url, image_dest):
     try:
         urllib.urlretrieve(image_url, image_dest)
         print "Success!"
+        return image_dest
     except Exception as e:
         print "Got error!"
         print (str(e))
+        return False
 
 
 if __name__ == '__main__':
