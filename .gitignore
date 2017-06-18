@@ -1,4 +1,7 @@
 *.pyc
 images/*
 .DS_STORE
-tmp/*
+tmp/*.jpg
+tmp/*.gif
+tmp/*.png
+tmp/*.jpeg
