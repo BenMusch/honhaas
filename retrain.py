@@ -374,8 +374,7 @@ def create_bottleneck_file(bottleneck_path, image_lists, label_name, index,
     bottleneck_values = run_bottleneck_on_image(
         sess, image_data, jpeg_data_tensor, bottleneck_tensor)
   except:
-    print('Error during processing file %s. Removing.' % image_path)
-    os.remove(image_path)
+    raise RuntimeError('Error during processing file %s. Removing.' % image_path)
 
   bottleneck_string = ','.join(str(x) for x in bottleneck_values)
   with open(bottleneck_path, 'w') as bottleneck_file:
@@ -414,9 +413,17 @@ def get_or_create_bottleneck(sess, image_lists, label_name, index, image_dir,
   bottleneck_path = get_bottleneck_path(image_lists, label_name, index,
                                         bottleneck_dir, category)
   if not os.path.exists(bottleneck_path):
-    create_bottleneck_file(bottleneck_path, image_lists, label_name, index,
-                           image_dir, category, sess, jpeg_data_tensor,
-                           bottleneck_tensor)
+    try:
+        create_bottleneck_file(bottleneck_path, image_lists, label_name, index,
+                                image_dir, category, sess, jpeg_data_tensor,
+                                bottleneck_tensor)
+    except RuntimeError:
+        image_path = get_image_path(image_lists, label_name, index,
+                                    image_dir, category)
+        print("Got error. Removing file.")
+        os.remove(image_path)
+        return False
+
   with open(bottleneck_path, 'r') as bottleneck_file:
     bottleneck_string = bottleneck_file.read()
   did_hit_error = False
@@ -466,13 +473,14 @@ def cache_bottlenecks(sess, image_lists, image_dir, bottleneck_dir,
     for category in ['training', 'testing', 'validation']:
       category_list = label_lists[category]
       for index, unused_base_name in enumerate(category_list):
-        get_or_create_bottleneck(sess, image_lists, label_name, index,
-                                 image_dir, category, bottleneck_dir,
-                                 jpeg_data_tensor, bottleneck_tensor)
+        result = get_or_create_bottleneck(sess, image_lists, label_name, index,
+                                          image_dir, category, bottleneck_dir,
+                                          jpeg_data_tensor, bottleneck_tensor)
 
-        how_many_bottlenecks += 1
-        if how_many_bottlenecks % 100 == 0:
-          print(str(how_many_bottlenecks) + ' bottleneck files created.')
+        if result != False:
+          how_many_bottlenecks += 1
+          if how_many_bottlenecks % 100 == 0:
+            print(str(how_many_bottlenecks) + ' bottleneck files created.')
 
 
 def get_random_cached_bottlenecks(sess, image_lists, how_many, category,
@@ -517,11 +525,12 @@ def get_random_cached_bottlenecks(sess, image_lists, how_many, category,
                                             image_index, image_dir, category,
                                             bottleneck_dir, jpeg_data_tensor,
                                             bottleneck_tensor)
-      ground_truth = np.zeros(class_count, dtype=np.float32)
-      ground_truth[label_index] = 1.0
-      bottlenecks.append(bottleneck)
-      ground_truths.append(ground_truth)
-      filenames.append(image_name)
+      if bottleneck != False:
+        ground_truth = np.zeros(class_count, dtype=np.float32)
+        ground_truth[label_index] = 1.0
+        bottlenecks.append(bottleneck)
+        ground_truths.append(ground_truth)
+        filenames.append(image_name)
   else:
     # Retrieve all bottlenecks.
     for label_index, label_name in enumerate(image_lists.keys()):
@@ -533,11 +542,12 @@ def get_random_cached_bottlenecks(sess, image_lists, how_many, category,
                                               image_index, image_dir, category,
                                               bottleneck_dir, jpeg_data_tensor,
                                               bottleneck_tensor)
-        ground_truth = np.zeros(class_count, dtype=np.float32)
-        ground_truth[label_index] = 1.0
-        bottlenecks.append(bottleneck)
-        ground_truths.append(ground_truth)
-        filenames.append(image_name)
+        if bottleneck != False:
+          ground_truth = np.zeros(class_count, dtype=np.float32)
+          ground_truth[label_index] = 1.0
+          bottlenecks.append(bottleneck)
+          ground_truths.append(ground_truth)
+          filenames.append(image_name)
   return bottlenecks, ground_truths, filenames
 
 
