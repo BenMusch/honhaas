@@ -1,9 +1,5 @@
 # Hotdog or Not Hotdog as as Service
 
-Note: `output_graph.pb` was too large to put on GitHub. You'll have to train the
-data to run this locally.
-
-
 API:
 
 ```javascript
